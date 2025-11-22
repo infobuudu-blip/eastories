@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>EA Stories — Le Jeu & Les Lots</title>
+  <link rel="icon" href="logoEA-removebg-preview (1).png">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    :root{--bg:#fffbfb;--text:#123;--accent:#FF7A90;--accent-2:#7DE2B8;--cta:#FFD06B;--muted:#6b6b6b}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text)}
+    .container{max-width:1100px;margin:0 auto;padding:24px}
+    header{padding:18px 0}
+    nav a{margin-right:14px;color:var(--muted);text-decoration:none;font-weight:600}
+    .hero{display:flex;gap:28px;align-items:center;background:linear-gradient(180deg,rgba(255,250,250,0.6),transparent);border-radius:16px;padding:28px}
+    .hero .text{flex:1}
+    .hero h1{font-family:'Baloo 2',cursive;font-size:2.2rem;margin-bottom:8px}
+    .hero p{color:var(--muted);font-size:1.05rem}
+    .hero img{width:420px;border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.08)}
+    .prizes{display:flex;gap:16px;margin-top:18px;flex-wrap:wrap}
+    .prize{background:#fff;padding:18px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.06);flex:1 1 250px}
+    .cta{display:inline-block;margin-top:12px;padding:10px 16px;background:var(--cta);border-radius:12px;color:#111;font-weight:700;text-decoration:none}
+    footer{padding:18px 0;color:var(--muted);font-size:.9rem}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav>
+        <a href="jeu.html">Accueil</a>
+        <a href="jeu.html">Le jeu & les lots</a>
+        <a href="participer.html">Participer</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero">
+      <div class="text">
+        <h1>EA Stories — Racontez votre rêve d'études</h1>
+        <p>Partagez un texte de 60 mots pour tenter de gagner un diagnostic académique, une mise en avant et une correction de CV. Le format est ludique, simple et conçu pour vous mettre en avant.</p>
+        <a class="cta" href="participer.html">Participer maintenant</a>
+      </div>
+      <img class="reveal-img" data-animate data-delay="120" src="images/1.jpg" alt="Étudiants marchant sur un campus universitaire">
+    </section>
+
+    <section>
+      <h2 style="margin-top:24px">Les lots</h2>
+      <div class="prizes">
+        <div class="prize"><h3>Diagnostic académique</h3><p>Un bilan personnalisé de votre dossier d'études.</p></div>
+        <div class="prize"><h3>Mise en avant</h3><p>Une promotion de votre profil sur nos réseaux.</p></div>
+        <div class="prize"><h3>Correction de CV</h3><p>Une révision professionnelle pour booster vos candidatures.</p></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container"><p>© <span id="year"></span> EA Stories — <a href="mailto:contact@etudant-africain.example">Contact</a></p></footer>
+
+  <script src="assets/app.js" defer></script>
+  <script>try{document.getElementById('year').textContent=new Date().getFullYear()}catch(e){};</script>
+</body>
+</html>

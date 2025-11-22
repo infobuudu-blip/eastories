@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>EA Stories — Participer</title>
+  <link rel="icon" href="logoEA-removebg-preview (1).png">
+  <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;600;700&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/styles.css">
+  <style>
+    :root{--bg:#fffbfb;--text:#123;--accent:#FF7A90;--muted:#6b6b6b;--cta:#FFD06B}
+    body{margin:0;font-family:'Poppins',sans-serif;background:var(--bg);color:var(--text)}
+    .container{max-width:900px;margin:0 auto;padding:24px}
+    nav a{margin-right:12px;color:var(--muted);text-decoration:none;font-weight:600}
+    .card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 12px 30px rgba(0,0,0,0.06)}
+    .btn{display:inline-block;padding:10px 14px;border-radius:12px;background:var(--cta);font-weight:700;color:#111;text-decoration:none}
+    .btn.secondary{background:transparent;border:1px solid rgba(0,0,0,0.06)}
+    form{margin-top:16px;display:none}
+    label{display:block;margin-top:12px}
+    input,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid rgba(0,0,0,0.08);margin-top:6px}
+  </style>
+</head>
+<body>
+  <header class="container">
+    <nav>
+      <a href="jeu.html">Accueil</a>
+      <a href="jeu.html">Le jeu</a>
+      <a href="participer.html">Participer</a>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h1 data-animate>Participer — Étape 1 : S'abonner</h1>
+    <div class="card">
+      <img class="reveal-img" data-animate data-delay="120" src="images/2.jpg" alt="Personne écrivant dans un carnet" style="width:100%;border-radius:10px;margin-bottom:12px">
+      <p>Pour participer, abonnez-vous d'abord au compte LinkedIn de <strong>L'Étudiant Africain</strong>. Ensuite cliquez sur "J'ai fini" pour accéder au formulaire.</p>
+      <p data-animate data-delay="220">
+        <a id="linkedin-btn" class="btn" href="https://www.linkedin.com/company/l-etudiant-africain/posts?lipi=urn%3Ali%3Apage%3Acompanies_company_index%3B96b7719a-6119-4074-846c-a1b57207729e" target="_blank" rel="noopener">S'abonner sur LinkedIn</a>
+        <button id="done-btn" class="btn secondary" aria-disabled="true">J'ai fini</button>
+      </p>
+
+      <form id="participation-form" novalidate>
+        <h2>Étape 2 : Remplir le formulaire</h2>
+        <label for="name">Nom complet</label>
+        <input id="name" name="name" required>
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" required>
+        <label for="user-text">Votre texte (60 mots environ)</label>
+        <textarea id="user-text" name="comment" rows="4" required></textarea>
+        <button type="submit" class="btn" data-animate data-delay="480">Envoyer</button>
+      </form>
+
+    </div>
+  </main>
+
+  <script src="assets/app.js" defer></script>
+  <script>
+    // enable the "J'ai fini" when the linkedin button is clicked
+    const doneBtn = document.getElementById('done-btn');
+    const form = document.getElementById('participation-form');
+    const linkedin = document.getElementById('linkedin-btn');
+    linkedin.addEventListener('click', function(){
+      // user opens LinkedIn in new tab; enable the done button after a small delay
+      setTimeout(()=>{
+        doneBtn.removeAttribute('aria-disabled');
+        doneBtn.classList.remove('btn','secondary');
+        doneBtn.classList.add('btn');
+      },400);
+    });
+    doneBtn.addEventListener('click', function(e){
+      e.preventDefault();
+      // reveal form
+      form.style.display = 'block';
+      form.scrollIntoView({behavior:'smooth'});
+    });
+
+    // simple client-side validation and then redirect to merci.html
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      const name = document.getElementById('name').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const text = document.getElementById('user-text').value.trim();
+      const words = text? text.split(/\s+/).filter(Boolean).length:0;
+      const errs = [];
+      if(!name) errs.push('Nom requis');
+      if(!email || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) errs.push('Email invalide');
+      if(words<30 || words>120) errs.push('Texte entre 30 et 120 mots (actuellement '+words+')');
+      if(errs.length){alert(errs.join('\n')); return}
+        // success: try to send to Supabase (if configured), otherwise fallback to localStorage
+        (async function(){
+          const payload = { name, email, text, words, source: 'LinkedIn', consent: true, status: 'pending' };
+          let saved = false;
+          try{
+            if (typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_ANON_KEY !== 'undefined' && SUPABASE_URL && SUPABASE_ANON_KEY){
+              // include supabase-js via CDN (see supabase-config.example.js)
+              try{
+                const client = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                const res = await client.from('submissions').insert([payload]).select();
+                if(res.error){ console.warn('Supabase insert error', res.error); }
+                else saved = true;
+              }catch(se){ console.warn('Supabase exception', se); }
+            }
+          }catch(e){ console.warn(e); }
+
+          // fallback: store locally so data is not lost
+          try{ localStorage.setItem('ea_sub', JSON.stringify({name,email,text,at:Date.now()})); }catch(e){}
+          // small celebration then redirect
+          try{
+            if(window.runConfetti){
+              await window.runConfetti(900);
+            }
+          }catch(e){}
+          window.location.href='merci.html';
+        })();
+    });
+  </script>
+  <!-- Supabase client (optional) and config. Copy supabase-config.example.js -> supabase-config.js and fill values -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    // Try to load local config if available
+    (function(){
+      var s = document.createElement('script'); s.src = 'supabase-config.js'; s.defer = true; s.onload = function(){ console.log('supabase-config loaded'); };
+      s.onerror = function(){ console.log('supabase-config.js not found; Supabase integration disabled'); };
+      document.head.appendChild(s);
+    })();
+  </script>
+</body>
+</html>

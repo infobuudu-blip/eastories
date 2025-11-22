@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Admin — Submissions</title>
+  <link rel="icon" href="logoEA-removebg-preview (1).png">
+  <style>
+    body{font-family:Arial, Helvetica, sans-serif;margin:0;background:#f7f7fb;color:#102}
+    .container{max-width:1100px;margin:28px auto;padding:18px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid #e6e6e6;text-align:left}
+    th{background:#fff;border-top:1px solid #e6e6e6}
+    .small{font-size:.9rem;color:#666}
+    .actions{display:flex;gap:8px}
+    .btn{padding:6px 10px;border-radius:8px;background:#ffd06b;color:#111;text-decoration:none;font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Dashboard — Participations</h1>
+    <p class="small">Cette interface lit la table `submissions` depuis Supabase. Ajoutez `supabase-config.js` avec vos clés (voir `supabase-config.example.js`).</p>
+
+    <div style="margin:12px 0">
+      <button id="refresh" class="btn">Rafraîchir</button>
+      <button id="export" class="btn">Exporter CSV</button>
+    </div>
+
+    <div id="notice" class="small"></div>
+    <table id="subs">
+      <thead><tr><th>Nom</th><th>Email</th><th>Extrait</th><th>Mots</th><th>Date</th><th>Statut</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script>
+    async function loadSubmissions(){
+      const notice = document.getElementById('notice'); notice.textContent='Chargement...';
+      try{
+        if(typeof SUPABASE_URL === 'undefined' || typeof SUPABASE_ANON_KEY === 'undefined'){
+          notice.textContent = 'Erreur: créez `supabase-config.js` basé sur `supabase-config.example.js` et rechargez.'; return;
+        }
+        const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const { data, error } = await supabase.from('submissions').select('*').order('submitted_at', { ascending: false }).limit(500);
+        if(error){ notice.textContent = 'Erreur Supabase: '+error.message; return }
+        const tbody = document.querySelector('#subs tbody'); tbody.innerHTML='';
+        data.forEach(r => {
+          const tr = document.createElement('tr');
+          const excerpt = (r.text||'').slice(0,120).replace(/\n/g,' ');
+          tr.innerHTML = `<td>${escapeHtml(r.name||'')}</td><td>${escapeHtml(r.email||'')}</td><td>${escapeHtml(excerpt)}</td><td>${r.words||''}</td><td>${new Date(r.submitted_at).toLocaleString()}</td><td>${r.status||''}</td>`;
+          tbody.appendChild(tr);
+        });
+        notice.textContent = `Chargé ${data.length} enregistrements.`;
+      }catch(e){ notice.textContent = 'Erreur: '+e.message }
+    }
+    function escapeHtml(s){ return (s+'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#39;"})[c]) }
+    document.getElementById('refresh').addEventListener('click', loadSubmissions);
+    document.getElementById('export').addEventListener('click', function(){
+      const rows = Array.from(document.querySelectorAll('#subs tbody tr')).map(tr=>Array.from(tr.children).map(td=>td.textContent));
+      const csv = rows.map(r=>r.map(v=>`"${(v||'').replace(/"/g,'""')}"`).join(',')).join('\n');
+      const blob = new Blob([csv], {type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href=url; a.download='submissions.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+
+    // Attempt to support two global names depending on CDN
+    const supabaseJs = window.supabase || (window.Supabase ? window.Supabase : window.supabaseJs);
+    if(!supabaseJs && window.createClient){ /* no-op */ }
+    // load on start
+    loadSubmissions();
+  </script>
+</body>
+</html>

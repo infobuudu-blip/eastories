@@ -1,0 +1,14 @@
+[build]
+  publish = "."
+  command = "" # no build step for plain static site
+
+# Optional: set pretty URLs and headers
+[[redirects]]
+  from = "/"
+  to = "/jeu.html"
+  status = 200
+
+[[redirects]]
+  from = "/*"
+  to = "/jeu.html"
+  status = 200
